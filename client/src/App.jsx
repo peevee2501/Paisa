@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { ThisMonth } from './screens/ThisMonth';
+import { MoneyOwed } from './screens/MoneyOwed';
+import { NeedsReview } from './screens/NeedsReview';
 
 function getSessionId() {
   let id = localStorage.getItem('paisa_session_id');
@@ -862,19 +865,28 @@ function App() {
         </>
       )}
 
-      {activeTab !== 'log' && (
-        <div
-          style={{
-            padding: '40px 16px',
-            textAlign: 'center',
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 400,
-            fontSize: '15px',
-            color: '#6B6B6B'
-          }}
-        >
-          Coming soon
-        </div>
+      {activeTab === 'thisMonth' && <ThisMonth />}
+
+      {activeTab === 'moneyOwed' && (
+        <MoneyOwed
+          transactions={transactions}
+          onUpdateTransaction={(updated) =>
+            setTransactions(
+              transactions.map(tx => (tx.id === updated.id ? updated : tx))
+            )
+          }
+        />
+      )}
+
+      {activeTab === 'needsReview' && (
+        <NeedsReview
+          transactions={transactions}
+          onUpdateTransaction={(updated) =>
+            setTransactions(
+              transactions.map(tx => (tx.id === updated.id ? updated : tx))
+            )
+          }
+        />
       )}
 
       <div
@@ -901,6 +913,8 @@ function App() {
             needsReview: 'Needs Review'
           };
 
+          const needsReviewCount = transactions.filter(tx => tx.needs_review).length;
+
           return (
             <div
               key={tab}
@@ -914,10 +928,33 @@ function App() {
                 fontSize: '11px',
                 color: activeTab === tab ? '#7A8C6E' : '#6B6B6B',
                 cursor: 'pointer',
-                padding: '4px 8px'
+                padding: '4px 8px',
+                position: 'relative'
               }}
             >
               {labels[tab]}
+              {tab === 'needsReview' && needsReviewCount > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '0px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#F59E0B',
+                    color: 'white',
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 700,
+                    fontSize: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {needsReviewCount}
+                </div>
+              )}
             </div>
           );
         })}
