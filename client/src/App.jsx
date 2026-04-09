@@ -103,8 +103,14 @@ function TransactionCard({ transaction, isEditing, onEdit, onSave, onCancel }) {
     category: transaction.category,
     payment_method: transaction.payment_method
   });
+  const [descriptionError, setDescriptionError] = useState('');
 
   const handleSave = () => {
+    if (!editForm.description.trim()) {
+      setDescriptionError("Description can't be empty");
+      return;
+    }
+    setDescriptionError('');
     onSave(transaction.id, editForm);
   };
 
@@ -248,27 +254,43 @@ function TransactionCard({ transaction, isEditing, onEdit, onSave, onCancel }) {
             marginTop: '8px'
           }}
         >
-          <input
-            type="text"
-            value={editForm.description}
-            onChange={(e) =>
-              setEditForm({ ...editForm, description: e.target.value })
-            }
-            placeholder="Description"
-            style={{
-              width: '100%',
-              background: 'white',
-              border: '1.5px solid #E0D9CF',
-              borderRadius: '8px',
-              padding: '10px 12px',
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 400,
-              fontSize: '14px',
-              color: '#2C2C2C',
-              outline: 'none',
-              marginBottom: '8px'
-            }}
-          />
+          <div>
+            <input
+              type="text"
+              value={editForm.description}
+              onChange={(e) => {
+                setEditForm({ ...editForm, description: e.target.value });
+                setDescriptionError('');
+              }}
+              placeholder="Description"
+              style={{
+                width: '100%',
+                background: 'white',
+                border: descriptionError ? '1.5px solid #EF4444' : '1.5px solid #E0D9CF',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 400,
+                fontSize: '14px',
+                color: '#2C2C2C',
+                outline: 'none',
+                marginBottom: '8px'
+              }}
+            />
+            {descriptionError && (
+              <div
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '12px',
+                  color: '#EF4444',
+                  marginBottom: '8px'
+                }}
+              >
+                {descriptionError}
+              </div>
+            )}
+          </div>
 
           <input
             type="number"
@@ -498,13 +520,18 @@ function App() {
 
   const handleSave = async (id, updates) => {
     try {
+      const updatePayload = { ...updates };
+      if (updatePayload.amount && updatePayload.amount !== '') {
+        updatePayload.needs_review = false;
+      }
+
       const response = await fetch(`/api/expenses/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'x-session-id': getSessionId()
         },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updatePayload)
       });
 
       const updated = await response.json();
@@ -512,6 +539,11 @@ function App() {
         transactions.map(tx => (tx.id === updated.id ? updated : tx))
       );
       setEditingId(null);
+
+      if (amountPrompt && amountPrompt.id === id) {
+        setAmountPrompt(null);
+        setAmountInput('');
+      }
     } catch (error) {
       console.error('Error updating expense:', error);
     }
@@ -691,10 +723,52 @@ function App() {
                       padding: '8px 20px',
                       cursor: loadingDemo ? 'default' : 'pointer',
                       marginTop: '8px',
-                      opacity: loadingDemo ? 0.6 : 1
+                      opacity: loadingDemo ? 0.6 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                   >
-                    {loadingDemo ? 'Loading...' : 'Load example data'}
+                    {loadingDemo && (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          gap: '2px'
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '4px',
+                            height: '4px',
+                            borderRadius: '50%',
+                            background: '#7A8C6E',
+                            animation: 'pulse 1.4s infinite'
+                          }}
+                        />
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '4px',
+                            height: '4px',
+                            borderRadius: '50%',
+                            background: '#7A8C6E',
+                            animation: 'pulse 1.4s infinite 0.2s'
+                          }}
+                        />
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '4px',
+                            height: '4px',
+                            borderRadius: '50%',
+                            background: '#7A8C6E',
+                            animation: 'pulse 1.4s infinite 0.4s'
+                          }}
+                        />
+                      </span>
+                    )}
+                    {loadingDemo ? 'Loading' : 'Load example data'}
                   </button>
                 </div>
               )}
@@ -717,22 +791,48 @@ function App() {
                 <div
                   style={{
                     marginTop: '12px',
-                    padding: '12px',
+                    padding: '12px 14px',
                     background: '#FFFFFF',
-                    border: '1px solid #E0D9CF',
+                    borderLeft: '4px solid #F59E0B',
                     borderRadius: '8px'
                   }}
                 >
                   <div
                     style={{
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontWeight: 400,
-                      fontSize: '13px',
-                      color: '#2C2C2C',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                       marginBottom: '8px'
                     }}
                   >
-                    Got it. How much was it?
+                    <div
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        background: '#F59E0B',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 700,
+                        fontSize: '10px',
+                        flexShrink: 0
+                      }}
+                    >
+                      !
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 400,
+                        fontSize: '13px',
+                        color: '#2C2C2C'
+                      }}
+                    >
+                      Got it. How much was it?
+                    </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input
@@ -896,16 +996,22 @@ function App() {
           bottom: 0,
           left: 0,
           right: 0,
-          maxWidth: '390px',
-          margin: '0 auto',
           background: 'white',
           borderTop: '1px solid #E0D9CF',
           display: 'flex',
-          justifyContent: 'space-around',
+          justifyContent: 'center',
           padding: '8px 0 4px',
           zIndex: 100
         }}
       >
+        <div
+          style={{
+            maxWidth: '390px',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-around'
+          }}
+        >
         {['log', 'thisMonth', 'moneyOwed', 'needsReview'].map((tab) => {
           const labels = {
             log: 'Log',
@@ -959,6 +1065,7 @@ function App() {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

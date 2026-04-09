@@ -43,6 +43,15 @@ function CheckmarkIcon() {
   );
 }
 
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
+
 export function NeedsReview({ transactions, onUpdateTransaction }) {
   const needsReview = transactions.filter(tx => tx.needs_review);
   const [amountInputs, setAmountInputs] = useState({});
@@ -191,13 +200,33 @@ export function NeedsReview({ transactions, onUpdateTransaction }) {
         >
           <div
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 700,
-              fontSize: '15px',
-              color: '#2C2C2C'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start'
             }}
           >
-            {tx.description}
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 700,
+                fontSize: '15px',
+                color: '#2C2C2C'
+              }}
+            >
+              {tx.description}
+            </div>
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 400,
+                fontSize: '11px',
+                color: '#6B6B6B',
+                whiteSpace: 'nowrap',
+                marginLeft: '8px'
+              }}
+            >
+              {formatDate(tx.created_at)}
+            </div>
           </div>
 
           <div
