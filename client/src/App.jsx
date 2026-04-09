@@ -718,7 +718,8 @@ function App() {
                   style={{
                     marginTop: '12px',
                     padding: '12px',
-                    background: '#FEF3C7',
+                    background: '#FFFFFF',
+                    border: '1px solid #E0D9CF',
                     borderRadius: '8px'
                   }}
                 >
@@ -727,7 +728,7 @@ function App() {
                       fontFamily: "'DM Sans', sans-serif",
                       fontWeight: 400,
                       fontSize: '13px',
-                      color: '#92400E',
+                      color: '#2C2C2C',
                       marginBottom: '8px'
                     }}
                   >
